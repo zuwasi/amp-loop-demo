@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Write Loops, Not Prompts — Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#121a2b; --ink:#eef2ff; --muted:#9fb0d0;
+    --accent:#00d9ff; --accent2:#7c5cff; --good:#36d399; --warn:#fbbf24;
+    --border:#243049;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif}
+  #track{display:flex;height:100vh;width:100vw;
+    transition:transform .5s cubic-bezier(.7,.1,.2,1)}
+  .slide{min-width:100vw;height:100vh;display:flex;flex-direction:column;
+    justify-content:center;padding:clamp(24px,6vw,96px);position:relative}
+  .kicker{color:var(--accent);font-weight:600;letter-spacing:.18em;
+    text-transform:uppercase;font-size:clamp(.7rem,1.4vw,.9rem);margin-bottom:18px}
+  h1{font-size:clamp(2rem,6vw,4.2rem);font-weight:800;line-height:1.05;margin-bottom:18px}
+  h2{font-size:clamp(1.5rem,4vw,2.8rem);font-weight:800;margin-bottom:24px;line-height:1.1}
+  p,li{font-size:clamp(1rem,2.1vw,1.5rem);color:var(--muted);line-height:1.55}
+  .lead{color:var(--ink)}
+  ul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:10px}
+  li{padding-left:34px;position:relative}
+  li::before{content:"▸";position:absolute;left:0;color:var(--accent);font-weight:800}
+  .quote{font-size:clamp(1.4rem,3.6vw,2.6rem);font-weight:600;color:var(--ink);
+    line-height:1.3;border-left:4px solid var(--accent);padding-left:24px}
+  .by{margin-top:18px;color:var(--muted);font-size:clamp(.9rem,1.8vw,1.2rem)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:10px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    padding:clamp(18px,2.6vw,30px)}
+  .card h3{font-size:clamp(1.05rem,2.2vw,1.5rem);margin-bottom:10px}
+  .card.bad h3{color:var(--warn)} .card.good h3{color:var(--good)}
+  pre{background:#0a0e18;border:1px solid var(--border);border-radius:14px;
+    padding:clamp(16px,2.4vw,26px);overflow:auto;margin-top:8px}
+  code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
+    font-size:clamp(.8rem,1.7vw,1.1rem);color:#cfe3ff;line-height:1.6}
+  .flow{font-family:ui-monospace,monospace;white-space:pre;color:var(--accent);
+    font-size:clamp(.72rem,1.7vw,1.15rem);line-height:1.5;background:#0a0e18;
+    border:1px solid var(--border);border-radius:14px;padding:clamp(16px,2.6vw,30px);
+    overflow:auto;margin-top:10px}
+  .tag{display:inline-block;background:var(--accent2);color:#fff;border-radius:999px;
+    padding:4px 14px;font-size:.8rem;font-weight:600;margin-bottom:18px}
+  .big{color:var(--accent);font-weight:800}
+  /* nav */
+  .nav{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:52px;
+    border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--border);
+    color:var(--ink);font-size:26px;cursor:pointer;z-index:20;display:flex;
+    align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+  .nav:hover{background:var(--accent);color:#001018}
+  #prev{left:18px} #next{right:18px}
+  .nav.hide{opacity:0;pointer-events:none}
+  #bar{position:fixed;left:0;bottom:0;height:5px;width:100%;background:rgba(255,255,255,.08);z-index:20}
+  #fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+  #count{position:fixed;right:18px;bottom:16px;color:var(--muted);font-size:.9rem;z-index:20}
+  #hint{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);color:var(--muted);
+    font-size:.95rem;z-index:20;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="track">
+
+  <!-- 1 -->
+  <section class="slide">
+    <div class="tag">Amp · Agentic Engineering</div>
+    <div class="kicker">Training</div>
+    <h1>Write Loops,<br>Not Prompts</h1>
+    <p class="lead">Moving from chatting with an AI to building systems that drive it.</p>
+    <div id="hint">← Swipe to navigate →</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="kicker">The idea</div>
+    <blockquote class="quote">"I don't prompt Claude anymore. I have loops running that prompt it and figure out what to do. My job is to write loops."</blockquote>
+    <div class="by">— Boris Cherny, lead of Claude Code @ Anthropic</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="kicker">Two mental models</div>
+    <h2>The shift in one picture</h2>
+    <div class="grid">
+      <div class="card bad">
+        <h3>Today: you prompt</h3>
+        <p>Human types prompt → AI replies → human reads → human types next prompt. You are the loop.</p>
+      </div>
+      <div class="card good">
+        <h3>Better: you build the loop</h3>
+        <p>You design the system that decides what to ask. The AI iterates until the goal is met.</p>
+      </div>
+    </div>
+    <p style="margin-top:22px">You move <span class="big">up one level of abstraction</span>.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="kicker">What a loop looks like</div>
+    <h2>The shape</h2>
+    <div class="flow">  Human writes loop ──▶ Loop prompts agent ──▶ Agent acts & replies
+        ▲                                            │
+        └────────── Loop decides next step ◀─────────┘</div>
+    <p style="margin-top:18px">Three jobs the loop owns: <span class="big">keep context</span>, <span class="big">decide "done"</span>, <span class="big">write the next prompt</span>.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="kicker">Why Amp makes this stronger</div>
+    <h2>Loop an agent, not a chatbot</h2>
+    <ul>
+      <li>A raw model only emits text — your loop must bolt on tools.</li>
+      <li>Amp is already an <span class="big">agent</span>: terminal, file editing, search, skills.</li>
+      <li>So each loop step can actually <span class="big">change the repo and verify itself</span>.</li>
+    </ul>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="kicker">The three building blocks</div>
+    <h2>Amp CLI primitives</h2>
+    <pre><code>amp threads new                          # a thread = the loop's memory
+amp threads continue &lt;id&gt; -x "&lt;prompt&gt;"  # one step, keeps context
+amp -x "&lt;prompt&gt;"                        # one-shot, no memory
+amp -x "&lt;prompt&gt;" --stream-json | jq ... # structured output to parse</code></pre>
+    <p style="margin-top:16px"><code>--dangerously-allow-all</code> lets it run unattended. Use only on trusted work.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="kicker">The minimal loop</div>
+    <h2>~15 lines of PowerShell</h2>
+    <pre><code>$tid = (amp threads new).Trim()
+$prompt = $task
+for ($i=0; $i -lt 10; $i++) {
+    $reply = amp threads continue $tid -x $prompt --dangerously-allow-all
+    if ($reply -match "TASK_COMPLETE") { break }   # LOOP decides done
+    $prompt = "Review vs the goal; if finished reply TASK_COMPLETE,
+               else do the next step."             # LOOP writes next prompt
+}</code></pre>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="kicker">The golden rule</div>
+    <h2>A loop is only as good as its "done" gate</h2>
+    <div class="grid">
+      <div class="card bad">
+        <h3>Weak gate</h3>
+        <p>"Does this look right?" — the AI judges itself. Unreliable, not auditable.</p>
+      </div>
+      <div class="card good">
+        <h3>Strong gate</h3>
+        <p>A deterministic check: a test, a build, a parser, a linter that returns pass/fail.</p>
+      </div>
+    </div>
+    <p style="margin-top:22px">Pattern: <span class="big">deterministic verifier = gate</span>, <span class="big">Amp = fixer</span>.</p>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="kicker">The classic loop</div>
+    <h2>Make the tests pass</h2>
+    <div class="flow">  run test suite ──pass──▶ STOP
+        ▲                     │
+        │  failures + output  │
+        └──── Amp fixes ◀─────┘</div>
+    <ul style="margin-top:18px">
+      <li>Gate = your existing test command (exit code 0 / non-zero).</li>
+      <li>Each pass, feed the failures to Amp; it edits code and re-runs.</li>
+      <li>Same shape works for: lint clean, build green, type errors → 0.</li>
+    </ul>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="kicker">More places it fits</div>
+    <h2>Where teams use loops</h2>
+    <ul>
+      <li><span class="big">Migrations</span> — upgrade an API across N files until build is green.</li>
+      <li><span class="big">Flaky-test triage</span> — re-run, isolate, fix, confirm stable.</li>
+      <li><span class="big">Coverage / lint debt</span> — drive a metric to a target threshold.</li>
+      <li><span class="big">Doc & config consistency</span> — check a rule, fix, re-check.</li>
+      <li><span class="big">Codegen + verify</span> — generate, compile, correct, repeat.</li>
+    </ul>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <div class="kicker">Pick the right work</div>
+    <h2>When loops win — and when they don't</h2>
+    <div class="grid">
+      <div class="card good">
+        <h3>Great fit</h3>
+        <p>Objective, repeatable goals: tests passing, build green, coverage, lint, migrations, refactors.</p>
+      </div>
+      <div class="card bad">
+        <h3>Poor fit</h3>
+        <p>Open judgment & design: product decisions, architecture trade-offs, naming. Keep these human-driven.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="kicker">Do it safely</div>
+    <h2>Guardrails</h2>
+    <ul>
+      <li>Run on a <span class="big">git branch</span>, never main.</li>
+      <li>Always set <span class="big">MaxSteps</span> — bound the blast radius.</li>
+      <li>Narrow the prompt: "fix only X, change nothing else."</li>
+      <li>Keep a <span class="big">human approval gate</span> before merge.</li>
+      <li>Drop <code>--dangerously-allow-all</code> until you trust that loop.</li>
+    </ul>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide">
+    <div class="kicker">Takeaway</div>
+    <h1>Stop being<br>the loop.</h1>
+    <p class="lead">Encode the goal once. Let the loop decide and iterate.<br>Your job is to design the system that asks the questions.</p>
+  </section>
+
+</div>
+
+<button id="prev" class="nav hide" aria-label="Previous">‹</button>
+<button id="next" class="nav" aria-label="Next">›</button>
+<div id="bar"><div id="fill"></div></div>
+<div id="count">1 / 13</div>
+
+<script>
+  const track=document.getElementById('track');
+  const slides=document.querySelectorAll('.slide');
+  const prev=document.getElementById('prev'), next=document.getElementById('next');
+  const fill=document.getElementById('fill'), count=document.getElementById('count');
+  const hint=document.getElementById('hint');
+  let i=0; const n=slides.length;
+  function go(k){
+    i=Math.max(0,Math.min(n-1,k));
+    track.style.transform=`translateX(-${i*100}vw)`;
+    fill.style.width=`${(i+1)/n*100}%`;
+    count.textContent=`${i+1} / ${n}`;
+    prev.classList.toggle('hide',i===0);
+    next.classList.toggle('hide',i===n-1);
+    if(i>0&&hint) hint.style.display='none';
+  }
+  next.onclick=()=>go(i+1); prev.onclick=()=>go(i-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(i+1);}
+    if(e.key==='ArrowLeft')go(i-1);
+  });
+  // touch swipe
+  let sx=null;
+  addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+  addEventListener('touchend',e=>{
+    if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)>50)go(i+(dx<0?1:-1));sx=null;});
+  // mouse drag
+  let mx=null;
+  addEventListener('mousedown',e=>mx=e.clientX);
+  addEventListener('mouseup',e=>{
+    if(mx===null)return;const dx=e.clientX-mx;
+    if(Math.abs(dx)>50)go(i+(dx<0?1:-1));mx=null;});
+  go(0);
+</script>
+</body>
+</html>
