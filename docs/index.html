@@ -223,6 +223,54 @@ for ($i=0; $i -lt 10; $i++) {
 
   <!-- 13 -->
   <section class="slide">
+    <div class="kicker">Real incident · matmul benchmark</div>
+    <h2>When "one-shot" looked as good as the loop</h2>
+    <p class="lead">We benchmarked an agent optimizing a C++ matmul. Running the
+    <span class="big">one-shot</span> (no external loop) repeatedly with Claude:</p>
+    <pre><code>run 1 (one-shot):  226 GFLOP/s   correct
+run 2 (one-shot):  277 GFLOP/s   correct   "...the sweet spot my
+                                            project memory records"</code></pre>
+    <p style="margin-top:14px">The one-shot kept getting <span class="big">better each run</span> and
+    nearly matched the loop. Suspicious — a true one-shot has no reason to improve.</p>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide">
+    <div class="kicker">Root cause</div>
+    <h2>There were two hidden loops</h2>
+    <div class="grid">
+      <div class="card bad">
+        <h3>1 · Across runs (memory)</h3>
+        <p>Claude wrote <span class="big">project memory</span> after each run
+        (the optimal kernel, traps, what regressed). Run N replayed runs 1…N-1.
+        We found 12 saved sessions + 4 memory files. A loop spread across
+        invocations, with memory as the shared state.</p>
+      </div>
+      <div class="card bad">
+        <h3>2 · Inside one run (tools)</h3>
+        <p>Even the first cold run self-iterated: it built, saw
+        <code>correct=0</code> (FMA bug), and fixed it — all in a single call.
+        A tool-using agent loops <span class="big">internally</span>.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">So the "one-shot" was never really one shot.</p>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide">
+    <div class="kicker">Lessons for fair benchmarks</div>
+    <h2>What reset does — and doesn't — fix</h2>
+    <ul>
+      <li><span class="big">Reset memory</span> → stops loop #1 (cross-run learning); each run starts cold again.</li>
+      <li>Reset does <span class="big">NOT</span> stop loop #2 (in-call self-iteration) — the agent still has tools.</li>
+      <li>Reset can't erase what the model <span class="big">already knows</span> (matmul is textbook).</li>
+      <li>To prove loop &gt; one-shot: isolate memory <span class="big">and</span> pick a task the model can't recall (hardware autotuning, novel kernels).</li>
+    </ul>
+    <p style="margin-top:16px">Irony: the loop is what <span class="big">discovered</span> the answer the one-shot later replayed.</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide">
     <div class="kicker">Takeaway</div>
     <h1>Stop being<br>the loop.</h1>
     <p class="lead">Encode the goal once. Let the loop decide and iterate.<br>Your job is to design the system that asks the questions.</p>
@@ -233,7 +281,7 @@ for ($i=0; $i -lt 10; $i++) {
 <button id="prev" class="nav hide" aria-label="Previous">‹</button>
 <button id="next" class="nav" aria-label="Next">›</button>
 <div id="bar"><div id="fill"></div></div>
-<div id="count">1 / 13</div>
+<div id="count">1 / 16</div>
 
 <script>
   const track=document.getElementById('track');
