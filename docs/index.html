@@ -240,20 +240,22 @@ run 2 (one-shot):  277 GFLOP/s   correct   "...the sweet spot my
     <h2>There were two hidden loops</h2>
     <div class="grid">
       <div class="card bad">
-        <h3>1 · Across runs (memory)</h3>
-        <p>Claude wrote <span class="big">project memory</span> after each run
-        (the optimal kernel, traps, what regressed). Run N replayed runs 1…N-1.
-        We found 12 saved sessions + 4 memory files. A loop spread across
-        invocations, with memory as the shared state.</p>
+        <h3>1 · Across runs (memory) — Claude: YES · Amp: NO</h3>
+        <p>Claude auto-wrote <span class="big">project memory</span> each run
+        (optimal kernel, traps, regressions) and replayed it — 12 sessions, 4
+        memory files. <span class="big">Amp's <code>-x</code> starts a fresh
+        thread every run</span> and writes no learned memory, so it stays cold.
+        This is the loop that broke the benchmark — Claude-specific here.</p>
       </div>
       <div class="card bad">
-        <h3>2 · Inside one run (tools)</h3>
-        <p>Even the first cold run self-iterated: it built, saw
-        <code>correct=0</code> (FMA bug), and fixed it — all in a single call.
-        A tool-using agent loops <span class="big">internally</span>.</p>
+        <h3>2 · Inside one run (tools) — both agents</h3>
+        <p>Even a cold run self-iterates: build, see <code>correct=0</code>
+        (FMA bug), fix it — all in one call. Inherent to any
+        <span class="big">tool-using agent</span>. Benign: it doesn't compound
+        across runs, and reset doesn't touch it.</p>
       </div>
     </div>
-    <p style="margin-top:18px">So the "one-shot" was never really one shot.</p>
+    <p style="margin-top:18px">So a repeated "one-shot" silently improves on Claude, but not on Amp.</p>
   </section>
 
   <!-- 15 -->
@@ -261,12 +263,13 @@ run 2 (one-shot):  277 GFLOP/s   correct   "...the sweet spot my
     <div class="kicker">Lessons for fair benchmarks</div>
     <h2>What reset does — and doesn't — fix</h2>
     <ul>
-      <li><span class="big">Reset memory</span> → stops loop #1 (cross-run learning); each run starts cold again.</li>
-      <li>Reset does <span class="big">NOT</span> stop loop #2 (in-call self-iteration) — the agent still has tools.</li>
+      <li><span class="big">Amp <code>-x</code></span> needs no reset — fresh thread per run, already cold.</li>
+      <li><span class="big">Claude</span> needs its project memory cleared for a fair cold one-shot.</li>
+      <li>Reset stops loop #1 (cross-run learning) but <span class="big">NOT</span> loop #2 (in-call self-iteration).</li>
       <li>Reset can't erase what the model <span class="big">already knows</span> (matmul is textbook).</li>
-      <li>To prove loop &gt; one-shot: isolate memory <span class="big">and</span> pick a task the model can't recall (hardware autotuning, novel kernels).</li>
+      <li>To prove loop &gt; one-shot: control memory <span class="big">and</span> pick a task the model can't recall.</li>
     </ul>
-    <p style="margin-top:16px">Irony: the loop is what <span class="big">discovered</span> the answer the one-shot later replayed.</p>
+    <p style="margin-top:16px">Not "Amp wins": Claude's memory is a <span class="big">feature</span> (it learns) — just a confound when benchmarking.</p>
   </section>
 
   <!-- 16 -->
